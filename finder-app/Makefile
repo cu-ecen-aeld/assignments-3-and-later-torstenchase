@@ -1,8 +1,16 @@
 CC=$(CROSS_COMPILE)gcc
-CFLAGS=-I.
+CFLAGS=-Wall
+LDLIBS=-lm
+LDFLAGS=-L/usr/lib64
 
-default: writer.o
-	$(CC) -o writer writer.o
+.PHONY: all
+all: default
 
+.PHONY: clean
 clean:
 	rm -f writer *.o
+
+.PHONY: default
+default: writer.o
+	$(CC) $(CFLAGS) writer.o $(LDFLAGS) $(LDLIBS) -o writer
+
