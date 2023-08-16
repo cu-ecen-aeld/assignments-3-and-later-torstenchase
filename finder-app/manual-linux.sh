@@ -84,7 +84,12 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 # Add library dependencies to rootfs
+echo "Copying the following dependencies"
+${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter" | sed 's/^.*://' | sed 's/.$//'
+${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library" | sed 's/^.*://' | sed 's/.$//'
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter" | sed 's/^.*\///' | sed 's/.$//' | xargs -I '{}' find ${TOOLCHAIN_DIR} -name '{}' | xargs -I '{}' cp '{}' ${OUTDIR}/rootfs/lib
+${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter" | sed 's/^.*\///' | sed 's/.$//' | xargs -I '{}' find ${TOOLCHAIN_DIR} -name '{}' | xargs -I '{}' cp '{}' ${OUTDIR}/rootfs/lib64
+${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library" | sed 's/^.*: \[//' | sed 's/.$//' | xargs -I '{}' find ${TOOLCHAIN_DIR} -name '{}' | xargs -I '{}' cp '{}' ${OUTDIR}/rootfs/lib
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library" | sed 's/^.*: \[//' | sed 's/.$//' | xargs -I '{}' find ${TOOLCHAIN_DIR} -name '{}' | xargs -I '{}' cp '{}' ${OUTDIR}/rootfs/lib64
 
 # Make device nodes
