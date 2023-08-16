@@ -12,7 +12,6 @@ BUSYBOX_VERSION=1_33_1
 FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
 CROSS_COMPILE=aarch64-none-linux-gnu-
-SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )"
 
 if [ $# -lt 1 ]
 then
@@ -97,22 +96,22 @@ sudo mknod -m 666 dev/console c 5 1
 sudo mknod -m 666 dev/null c 1 5
 
 # Clean and build the writer utility
-cd $SCRIPT_DIR
+cd $FINDER_APP_DIR
 make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} clean
 make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} all
 cd ..
 
 # Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
-cp "$SCRIPT_DIR/"finder.sh "$OUTDIR/rootfs/home"
-cp "$SCRIPT_DIR/"finder-test.sh "$OUTDIR/rootfs/home"
+cp "$FINDER_APP_DIR/"finder.sh "$OUTDIR/rootfs/home"
+cp "$FINDER_APP_DIR/"finder-test.sh "$OUTDIR/rootfs/home"
 mkdir "$OUTDIR/rootfs/home/conf"
-cp "$SCRIPT_DIR/conf/"*.txt "$OUTDIR/rootfs/home/conf"
-cp "$SCRIPT_DIR/writer" "$OUTDIR/rootfs/home"
-cp "$SCRIPT_DIR/autorun-qemu.sh" "$OUTDIR/rootfs/home"
+cp "$FINDER_APP_DIR/conf/"*.txt "$OUTDIR/rootfs/home/conf"
+cp "$FINDER_APP_DIR/writer" "$OUTDIR/rootfs/home"
+cp "$FINDER_APP_DIR/autorun-qemu.sh" "$OUTDIR/rootfs/home"
 
 # Chown the root directory
-sudo chown root:root "$OUTDIR/rootfs"
+sudo chown -R root:root "$OUTDIR/rootfs"/*
 
 # Create initramfs.cpio.gz
 cd "$OUTDIR/rootfs"

@@ -8,6 +8,8 @@ set -u
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp/aeld-data
+FINDER_APP_DIR=$(realpath $(dirname $0))
+cd $FINDER_APP_DIR
 username=$(cat conf/username.txt)
 
 if [ $# -lt 3 ]
