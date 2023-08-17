@@ -12,6 +12,7 @@ BUSYBOX_VERSION=1_33_1
 FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
 CROSS_COMPILE=aarch64-none-linux-gnu-
+TOOLCHAIN_DIR="$( ${CROSS_COMPILE}gcc -print-sysroot )"
 
 if [ $# -lt 1 ]
 then
@@ -84,12 +85,10 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 # Add library dependencies to rootfs
 echo "Copying the following dependencies"
-${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter" | sed 's/^.*://' | sed 's/.$//'
-${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library" | sed 's/^.*://' | sed 's/.$//'
-${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter" | sed 's/^.*\///' | sed 's/.$//' | xargs -I '{}' find ${TOOLCHAIN_DIR} -name '{}' | xargs -I '{}' cp '{}' ${OUTDIR}/rootfs/lib
-${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter" | sed 's/^.*\///' | sed 's/.$//' | xargs -I '{}' find ${TOOLCHAIN_DIR} -name '{}' | xargs -I '{}' cp '{}' ${OUTDIR}/rootfs/lib64
-${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library" | sed 's/^.*: \[//' | sed 's/.$//' | xargs -I '{}' find ${TOOLCHAIN_DIR} -name '{}' | xargs -I '{}' cp '{}' ${OUTDIR}/rootfs/lib
-${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library" | sed 's/^.*: \[//' | sed 's/.$//' | xargs -I '{}' find ${TOOLCHAIN_DIR} -name '{}' | xargs -I '{}' cp '{}' ${OUTDIR}/rootfs/lib64
+${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter" | sed 's/^.*\///' | sed 's/.$//' | xargs -I '{}' find "${TOOLCHAIN_DIR}" -name '{}'
+${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library" | sed 's/^.*: \[//' | sed 's/.$//' | xargs -I '{}' find "${TOOLCHAIN_DIR}" -name '{}'
+${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter" | sed 's/^.*\///' | sed 's/.$//' | xargs -I '{}' cp ${TOOLCHAIN_DIR}/lib/'{}' ${OUTDIR}/rootfs/lib
+${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library" | sed 's/^.*: \[//' | sed 's/.$//' | xargs -I '{}' cp ${TOOLCHAIN_DIR}/lib64/'{}' ${OUTDIR}/rootfs/lib64
 
 # Make device nodes
 sudo mknod -m 666 dev/console c 5 1
@@ -97,8 +96,8 @@ sudo mknod -m 666 dev/null c 1 5
 
 # Clean and build the writer utility
 cd $FINDER_APP_DIR
-make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} clean
-make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} all
+make clean
+make CROSS_COMPILE=${CROSS_COMPILE} all
 cd ..
 
 # Copy the finder related scripts and executables to the /home directory
