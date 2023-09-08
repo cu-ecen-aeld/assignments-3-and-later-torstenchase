@@ -72,7 +72,6 @@ int main (int argc, char **argv)
         freeaddrinfo(res);
         goto error;
     }
-
     freeaddrinfo(res);
 
     pid_t pid = (dm) ? fork() : 0;
