@@ -18,6 +18,7 @@ static void sig_handler(int signum);
 
 int main (int argc, char **argv) 
 {
+    char dst[INET_ADDRSTRLEN];
     bool dm = false;
     if ((argc == 2) && (strcmp(argv[1], "-d") == 0))
     {
@@ -49,13 +50,21 @@ int main (int argc, char **argv)
     struct addrinfo* res = NULL;
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_flags = AI_PASSIVE;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
 
     if ((status = getaddrinfo(NULL, "9000", &hints, &res)) != 0)
     {
         syslog(LOG_ERR, "Error getting addr info: %s", gai_strerror(status));
         goto error;
     }
-    syslog (LOG_DEBUG, "sockaddr: %d: %d: %d, %s", res->ai_family, res->ai_socktype, res->ai_addr->sa_family, &res->ai_addr->sa_data[0]);
+
+    struct sockaddr_in* sin = (struct sockaddr_in*)res->ai_addr;
+    syslog (LOG_DEBUG, "sockaddr: fam:%d, addr:%s:%d", 
+        sin->sin_family, 
+        inet_ntop(AF_INET, (struct sockaddr_in *)res->ai_addr, dst, sizeof(dst)),
+        ntohs(sin->sin_port)
+        );
 
     if ((status = bind(sfd, res->ai_addr, sizeof(struct sockaddr))) != 0)
     {
@@ -102,8 +111,8 @@ int main (int argc, char **argv)
                 goto error;
             }
 
-            char dst[64];
-            syslog(LOG_INFO, "Accepted connection from %s", inet_ntop(AF_INET, (struct sockaddr_in *)&addr, dst, sizeof(dst)));
+            sin = (struct sockaddr_in*)&addr;
+            syslog(LOG_INFO, "Accepted connection from %s:%d", inet_ntop(AF_INET, (struct sockaddr_in *)&addr, dst, sizeof(dst)), ntohs(sin->sin_port));
 
             writefile = fopen(filename, "a+");
             if (!writefile)
@@ -189,7 +198,8 @@ int main (int argc, char **argv)
 
             shutdown(afd, SHUT_RDWR);
             close(afd);
-            syslog(LOG_INFO, "Closed connection from %s", inet_ntop(AF_INET, (struct sockaddr_in *)&addr, dst, sizeof(dst)));
+            sin = (struct sockaddr_in*)&addr;
+            syslog(LOG_INFO, "Closed connection from %s:%d", inet_ntop(AF_INET, (struct sockaddr_in *)&addr, dst, sizeof(dst)), ntohs(sin->sin_port));
         }
 
         shutdown(sfd, SHUT_RDWR);
