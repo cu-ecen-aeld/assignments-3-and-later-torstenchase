@@ -1,6 +1,6 @@
 CC=$(CROSS_COMPILE)gcc
 CFLAGS=-g -Wall -Werror
-LDLIBS=-lm
+LDLIBS=-lm -lpthread -lrt
 LDFLAGS=-L/usr/lib64
 
 .PHONY: all
